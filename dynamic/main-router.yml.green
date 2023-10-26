@@ -1,0 +1,6 @@
+http:
+  routers:
+    main_router:
+      rule: Host(`docker.localhost`)
+      entryPoints: web
+      service: green_service@docker

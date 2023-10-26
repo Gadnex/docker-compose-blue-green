@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  green:
+    image: docker-compose-blue-green:0.0.1-SNAPSHOT
+    ports:
+      - 8080
+      - 9080
+    environment:
+      - APPLICATION_CORS_ORIGINS=*
+      - APPLICATION_BG_COLOR=green
+    labels:
+      # Enable Traefik
+      - traefik.enable=true
+      # Configure application load balancer
+      - traefik.http.services.green_service.loadbalancer.server.port=8080
+      - traefik.http.services.green_service.loadbalancer.healthCheck.port=9080
+      - traefik.http.services.green_service.loadbalancer.healthCheck.path=/actuator/health
+      - traefik.http.services.green_service.loadbalancer.healthCheck.interval=30s
+      - traefik.http.services.green_service.loadbalancer.healthCheck.timeout=3s
+      # Configure application router
+      - traefik.http.routers.green_router.service=green_service
+      - traefik.http.routers.green_router.rule=Host(`green.localhost`)
+      - traefik.http.routers.green_router.entrypoints=web
+      # Configure management load balancer
+      - traefik.http.services.management_green_service.loadbalancer.server.port=9080
+      # Configure management router
+      - traefik.http.routers.management_green_router.service=management_green_service
+      - traefik.http.routers.management_green_router.rule=Host(`management.localhost`) || Host(`management-green.localhost`)
+      - traefik.http.routers.management_green_router.entrypoints=web
